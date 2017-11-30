@@ -5,12 +5,22 @@ public class Client {
 	private String lastName;
 	private String firstName;
 	private Gender gender;
+	private int idFav;
+	
+	public Client(String lastName, String firstName, Gender gender, int idFav) {
+		super();
+		this.lastName = lastName;
+		this.firstName = firstName;
+		this.gender = gender;
+		this.idFav = idFav;
+	}
 	
 	public Client(String lastName, String firstName, Gender gender) {
 		super();
 		this.lastName = lastName;
 		this.firstName = firstName;
 		this.gender = gender;
+		
 	}
 	
 	public Client(String lastName, String firstName) {
@@ -38,6 +48,12 @@ public class Client {
 	public Gender getGender() {
 		return gender;
 	}
+
+	public int getIdFav() {
+		return idFav;
+	}
+
+	
 
 	@Override
 	public String toString() {

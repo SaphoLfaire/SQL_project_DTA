@@ -29,12 +29,20 @@ public class Main {
 								+ "PRIMARY KEY (id_book, id_client))");
 
 				conn.commit();
+				stmt.close();
+				
+				
 
 			} catch (Exception e) {
 				System.out.println(e.getMessage());
 				conn.rollback();
 			} finally {
 				conn.setAutoCommit(true);
+
+				if (conn != null) {
+					conn.close();
+				}
+
 			}
 		}
 	}
