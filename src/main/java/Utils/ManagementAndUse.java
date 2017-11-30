@@ -3,13 +3,13 @@ package Utils;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
+import java.sql.Statement;
 import java.util.List;
 
 import Objects.Book;
 import Objects.Client;
-import Objects.Gender;
 
 public class ManagementAndUse {
 
@@ -19,11 +19,72 @@ public class ManagementAndUse {
 
 	}
 
-	public static void buy(Client client, Book book) {
+	public static void buy(Client client, Book book) throws SQLException {
 
+		try (Connection conn = DriverManager.getConnection(url, "postgres", "postgres")) {
+
+			try (PreparedStatement stmt1 = conn
+					.prepareStatement("SELECT client.id FROM client WHERE client.lastname = ?")) {
+
+				stmt1.setString(1, client.getLastName());
+				ResultSet resultSet = stmt1.executeQuery();
+				while (resultSet.next()) {
+					client.setId(resultSet.getInt("id")); // "id" = nom de la colonne concernee
+				}
+
+			}
+
+			try (PreparedStatement stmt = conn
+					.prepareStatement("INSERT INTO prefer (id_client, id_book) VALUES(?,?)")) {
+
+				stmt.setLong(1, client.getId());
+				stmt.setLong(2, book.getId());
+				stmt.executeUpdate(); // NE PAS OUBLIER CETTE LIGNE
+				stmt.close();
+
+			} catch (Exception e) {
+				System.out.println(e.getMessage());
+
+			} finally {
+
+				conn.close();
+			}
+
+		}
 	}
 
-	public static void prefer(Client client, Book book) {
+	public static void prefer(Client client, Book book) throws SQLException {
+
+		try (Connection conn = DriverManager.getConnection(url, "postgres", "postgres")) {
+
+			try (PreparedStatement stmt1 = conn.prepareStatement("SELECT book.id FROM book WHERE book.title = ?")) {
+
+				stmt1.setString(1, book.getTitle());
+				ResultSet resultSet = stmt1.executeQuery();
+				while (resultSet.next()) {
+					book.setId(resultSet.getInt("id")); // "id" = nom de la colonne concernee
+				}
+
+			}
+
+			try (PreparedStatement stmt = conn
+					.prepareStatement("UPDATE client SET id_favourite_book = ? WHERE client.lastname = ?")) {
+
+				stmt.setLong(1, book.getId());
+				stmt.setString(2, client.getLastName());
+				stmt.executeUpdate(); // NE PAS OUBLIER CETTE LIGNE
+				stmt.close();
+
+			} catch (Exception e) {
+				System.out.println(e.getMessage());
+				// conn.rollback();
+
+			} finally {
+				// conn.setAutoCommit(true);
+
+				conn.close();
+			}
+		}
 
 	}
 
@@ -31,9 +92,9 @@ public class ManagementAndUse {
 
 		try (Connection conn = DriverManager.getConnection(url, "postgres", "postgres")) {
 
-			try (PreparedStatement stmt = conn.prepareStatement(
-					"INSERT INTO client(lastname, firstname, gender) VALUES(?, ?, ?)")) {
-				
+			try (PreparedStatement stmt = conn
+					.prepareStatement("INSERT INTO client(lastname, firstname, gender) VALUES(?, ?, ?)")) {
+
 				for (Client client : clients) {
 					stmt.setString(1, client.getLastName());
 					stmt.setString(2, client.getFirstName());
@@ -46,10 +107,10 @@ public class ManagementAndUse {
 
 			} catch (Exception e) {
 				System.out.println(e.getMessage());
-				//conn.rollback();
+				// conn.rollback();
 
 			} finally {
-				//conn.setAutoCommit(true);
+				// conn.setAutoCommit(true);
 
 				conn.close();
 			}
@@ -61,29 +122,18 @@ public class ManagementAndUse {
 
 	public static Boolean createBook(Book... books) throws SQLException {
 
-		try (Connection conn = DriverManager.getConnection(url, "postgres", "postgres")) {
+		Connection conn = DriverManager.getConnection(url, "postgres", "postgres");
 
-			try (PreparedStatement stmt = conn.prepareStatement("INSERT INTO book(title, author) VALUES(?, ?)")) {
+		PreparedStatement stmt = conn.prepareStatement("INSERT INTO book(title, author) VALUES(?, ?)");
 
-				for (Book book : books) {
-					stmt.setString(1, book.getTitle());
-					stmt.setString(2, book.getAuthor());
-					stmt.addBatch();
-				}
-
-				stmt.executeBatch();
-				stmt.close();
-
-			} catch (Exception e) {
-				System.out.println(e.getMessage());
-				//conn.rollback();
-
-			} finally {
-				//conn.setAutoCommit(true);
-
-				conn.close();
-			}
+		for (Book book : books) {
+			stmt.setString(1, book.getTitle());
+			stmt.setString(2, book.getAuthor());
+			stmt.addBatch();
 		}
+
+		stmt.executeBatch();
+		stmt.close();
 
 		return true;
 	}

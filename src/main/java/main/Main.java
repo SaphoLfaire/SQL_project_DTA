@@ -56,7 +56,8 @@ public class Main {
 				Client client3 = new Client ("LAPROPRE", "Anais", Gender.F);
 				ManagementAndUse.createClient(client1, client2, client3);
 				
-				
+				ManagementAndUse.prefer(client1, book1);
+				ManagementAndUse.buy(client1, book1);
 				
 				//conn.commit();
 				stmt.close();
