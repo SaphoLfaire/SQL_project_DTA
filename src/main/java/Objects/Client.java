@@ -52,6 +52,10 @@ public class Client {
 	public int getIdFav() {
 		return idFav;
 	}
+	
+	public void setIdFav(int id) {
+		this.idFav = id;
+	}
 
 	
 

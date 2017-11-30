@@ -27,61 +27,65 @@ public class ManagementAndUse {
 
 	}
 
-	public static Client createClient(String lastName, String firstName, Gender gender, int idFav) throws SQLException {
-
-		Client client = new Client(lastName, firstName, gender, idFav);
+	public static Boolean createClient(Client... clients) throws SQLException {
 
 		try (Connection conn = DriverManager.getConnection(url, "postgres", "postgres")) {
 
 			try (PreparedStatement stmt = conn.prepareStatement(
-					"INSERT INTO client(lastname, firstname, gender, id_favourite_book) VALUES(?, ?, ?, ?)")) {
-				stmt.setString(1, client.getLastName());
-				stmt.setString(2, client.getFirstName());
-				stmt.setString(3, client.getGender().name());
-				stmt.setLong(4, client.getIdFav());
-				stmt.addBatch();
+					"INSERT INTO client(lastname, firstname, gender) VALUES(?, ?, ?)")) {
+				
+				for (Client client : clients) {
+					stmt.setString(1, client.getLastName());
+					stmt.setString(2, client.getFirstName());
+					stmt.setString(3, client.getGender().name());
+					stmt.addBatch();
+				}
 
+				stmt.executeBatch();
 				stmt.close();
 
 			} catch (Exception e) {
 				System.out.println(e.getMessage());
-				conn.rollback();
+				//conn.rollback();
 
 			} finally {
-				conn.setAutoCommit(true);
+				//conn.setAutoCommit(true);
 
 				conn.close();
 			}
 		}
 
-		return client;
+		return true;
 
 	}
 
-	public static Book createBook(String title, String author) throws SQLException {
+	public static Boolean createBook(Book... books) throws SQLException {
 
-		Book book = new Book(title, author);
 		try (Connection conn = DriverManager.getConnection(url, "postgres", "postgres")) {
 
 			try (PreparedStatement stmt = conn.prepareStatement("INSERT INTO book(title, author) VALUES(?, ?)")) {
-				stmt.setString(1, book.getTitle());
-				stmt.setString(2, book.getAuthor());
-				stmt.addBatch();
 
+				for (Book book : books) {
+					stmt.setString(1, book.getTitle());
+					stmt.setString(2, book.getAuthor());
+					stmt.addBatch();
+				}
+
+				stmt.executeBatch();
 				stmt.close();
 
 			} catch (Exception e) {
 				System.out.println(e.getMessage());
-				conn.rollback();
+				//conn.rollback();
 
 			} finally {
-				conn.setAutoCommit(true);
+				//conn.setAutoCommit(true);
 
 				conn.close();
 			}
 		}
 
-		return book;
+		return true;
 	}
 
 	public static List<Book> clientsBook(Client client) {
